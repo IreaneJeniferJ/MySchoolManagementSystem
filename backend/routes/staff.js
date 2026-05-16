@@ -13,7 +13,7 @@ router.get("/staffCount", async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 5, search = "" } = req.query;
+    const { page = 1, limit = 10, search = "" } = req.query;
 
     const query = search
       ? {

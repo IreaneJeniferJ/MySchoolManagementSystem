@@ -4,7 +4,7 @@ const StaffRole = require('../models/staffRole.js');
 
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 5, search = "" } = req.query;
+    const { page = 1, limit = 10, search = "" } = req.query;
 
     const query = {
       ...(search ? { staffRole: { $regex: new RegExp(search, "i") } } : {}),

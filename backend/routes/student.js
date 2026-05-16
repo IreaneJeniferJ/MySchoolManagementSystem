@@ -37,28 +37,62 @@ router.get('/ping', (req, res) => {
 
 const mongoose = require('mongoose');
 
+
 router.get('/generateId/:standard', async (req, res) => {
   try {
+
     const standardId = req.params.standard;
+
+    const standardData = await Standard.findById(standardId);
+
+    if (!standardData) {
+      return res.status(404).json({
+        message: 'Standard not found'
+      });
+    }
+
     const year = new Date().getFullYear();
 
+    let prefix = '';
+
+    if (
+      standardData.standard === 'LKG' ||
+      standardData.standard === 'UKG' ||
+      standardData.standard === 'PRE-KG'
+    ) {
+
+      prefix = standardData.standard.replace('-', '');
+
+    } else {
+
+      prefix = `STD${standardData.standard}`;
+    }
+
     const count = await student.countDocuments({
-      standard: new mongoose.Types.ObjectId(standardId),
-      createdAt: {
-        $gte: new Date(`${year}-01-01T00:00:00.000Z`),
-        $lt: new Date(`${year + 1}-01-01T00:00:00.000Z`)
-      }
+      standard: new mongoose.Types.ObjectId(standardId)
     });
 
-    const paddedCount = String(count + 1).padStart(3, '0');
-    const generatedId = `RS${year}${paddedCount}`;
+    const nextNumber =
+      String(count + 1).padStart(3, '0');
 
-    res.status(200).json({ studentId: generatedId });
+    const generatedId =
+      `${prefix}${year}${nextNumber}`;
+
+    res.status(200).json({
+      studentId: generatedId
+    });
+
   } catch (err) {
+
     console.error('Error generating student ID:', err);
-    res.status(500).json({ message: err.message });
+
+    res.status(500).json({
+      message: err.message
+    });
   }
 });
+
+
 
 
 router.post('/addStudent', upload.single('profilePicture'), async (req, res) => {
@@ -104,7 +138,7 @@ router.post('/addStudent', upload.single('profilePicture'), async (req, res) => 
 
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 5, search = "" } = req.query;
+    const { page = 1, limit = 10, search = "" } = req.query;
 
     const query = search
       ? {
